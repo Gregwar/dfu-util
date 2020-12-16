@@ -259,7 +259,6 @@ static int dfuse_special_command(struct dfu_if *dif, unsigned int address,
 		/* wait while command is executed */
 		if (verbose > 1)
 			fprintf(stderr, "   Poll timeout %i ms\n", polltimeout);
-		milli_sleep(polltimeout);
 		if (command == READ_UNPROTECT)
 			return ret;
 		/* Workaround for e.g. Black Magic Probe getting stuck */
@@ -298,7 +297,6 @@ static int dfuse_dnload_chunk(struct dfu_if *dif, unsigned char *data, int size,
 			errx(EX_IOERR, "Error during download get_status");
 			return ret;
 		}
-		milli_sleep(dst.bwPollTimeout);
 	} while (dst.bState != DFU_STATE_dfuDNLOAD_IDLE &&
 		 dst.bState != DFU_STATE_dfuERROR &&
 		 dst.bState != DFU_STATE_dfuMANIFEST &&

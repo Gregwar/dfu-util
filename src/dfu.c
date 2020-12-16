@@ -133,32 +133,36 @@ int dfu_get_status( struct dfu_if *dif, struct dfu_status *status )
     unsigned char buffer[6];
     int result;
 
-    /* Initialize the status data structure */
-    status->bStatus       = DFU_STATUS_ERROR_UNKNOWN;
-    status->bwPollTimeout = 0;
-    status->bState        = STATE_DFU_ERROR;
-    status->iString       = 0;
+    do {
+        /* Initialize the status data structure */
+        status->bStatus       = DFU_STATUS_ERROR_UNKNOWN;
+        status->bwPollTimeout = 0;
+        status->bState        = STATE_DFU_ERROR;
+        status->iString       = 0;
 
-    result = libusb_control_transfer( dif->dev_handle,
-          /* bmRequestType */ LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE,
-          /* bRequest      */ DFU_GETSTATUS,
-          /* wValue        */ 0,
-          /* wIndex        */ dif->interface,
-          /* Data          */ buffer,
-          /* wLength       */ 6,
-                              dfu_timeout );
+        result = libusb_control_transfer( dif->dev_handle,
+            /* bmRequestType */ LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE,
+            /* bRequest      */ DFU_GETSTATUS,
+            /* wValue        */ 0,
+            /* wIndex        */ dif->interface,
+            /* Data          */ buffer,
+            /* wLength       */ 6,
+                                dfu_timeout );
 
-    if( 6 == result ) {
-        status->bStatus = buffer[0];
-        if (dif->quirks & QUIRK_POLLTIMEOUT)
-            status->bwPollTimeout = DEFAULT_POLLTIMEOUT;
-        else
-            status->bwPollTimeout = ((0xff & buffer[3]) << 16) |
-                                    ((0xff & buffer[2]) << 8)  |
-                                    (0xff & buffer[1]);
-        status->bState  = buffer[4];
-        status->iString = buffer[5];
-    }
+        if( 6 == result ) {
+            status->bStatus = buffer[0];
+            if (dif->quirks & QUIRK_POLLTIMEOUT)
+                status->bwPollTimeout = DEFAULT_POLLTIMEOUT;
+            else
+                status->bwPollTimeout = ((0xff & buffer[3]) << 16) |
+                                        ((0xff & buffer[2]) << 8)  |
+                                        (0xff & buffer[1]);
+            status->bState  = buffer[4];
+            status->iString = buffer[5];
+        } else {
+            milli_sleep(8);
+        }
+    } while (result != 6);
 
     return result;
 }

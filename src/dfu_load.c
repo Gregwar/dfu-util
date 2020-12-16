@@ -141,8 +141,6 @@ off_t dfuload_do_dnload(struct dfu_if *dif, int xfer_size, struct dfu_file *file
 					dst.bState == DFU_STATE_dfuERROR)
 				break;
 
-			/* Wait while device executes flashing */
-			milli_sleep(dst.bwPollTimeout);
 			if (verbose > 1)
 				fprintf(stderr, "Poll timeout %i ms\n", dst.bwPollTimeout);
 
